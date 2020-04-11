@@ -1,6 +1,7 @@
 package com.upgrad.quora.api;
 
 import com.upgrad.quora.service.ServiceConfiguration;
+import com.upgrad.quora.db.DbConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
@@ -10,7 +11,7 @@ import org.springframework.context.annotation.Import;
  * This class launches a Spring Application from Java main method.
  */
 @SpringBootApplication
-@Import(ServiceConfiguration.class)
+@Import({ServiceConfiguration.class,DbConfiguration.class})
 public class QuoraApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(QuoraApiApplication.class, args);

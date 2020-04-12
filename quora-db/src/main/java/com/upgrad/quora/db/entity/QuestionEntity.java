@@ -1,5 +1,6 @@
 package com.upgrad.quora.db.entity;
 
+import org.apache.commons.lang3.builder.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -8,17 +9,13 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDate;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+
 @Entity
 @Table(name = "question")
 @NamedQueries({
-        @NamedQuery(name="Questions.editById",query = "UPDATE QuestionEntity q SET q.content = :content WHERE q.uuid=:questionId"),
-        @NamedQuery(name="Questions.deleteById",query = "DELETE FROM QuestionEntity q WHERE q.uuid=:questionId"),
-        @NamedQuery(name="Questions.fetchAll", query = "SELECT q FROM QuestionEntity q"),
-        @NamedQuery(name = "Questions.fetchByUserId", query = "SELECT q FROM QuestionEntity q WHERE q.user=:user")
+        @NamedQuery(name="Questions.getById",query = "SELECT q FROM QuestionEntity q WHERE q.uuid=:questionId"),
+        @NamedQuery(name = "Questions.fetchByUserId", query = "SELECT q FROM QuestionEntity q WHERE q.user=:user"),
+        @NamedQuery(name="Questions.fetchAll", query = "SELECT q FROM QuestionEntity q")
 })
 public class QuestionEntity implements Serializable {
     @Id
@@ -44,6 +41,9 @@ public class QuestionEntity implements Serializable {
     @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
+    @ToStringExclude
+    @HashCodeExclude
+    @EqualsExclude
     private UserEntity user;
 
     public Integer getId() {
@@ -88,12 +88,12 @@ public class QuestionEntity implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        return new EqualsBuilder().append(this, obj).isEquals();
+        return EqualsBuilder.reflectionEquals(this,obj,Boolean.FALSE);
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(this).hashCode();
+        return HashCodeBuilder.reflectionHashCode(this,Boolean.FALSE);
     }
 
     @Override

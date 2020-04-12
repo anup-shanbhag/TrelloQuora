@@ -1,5 +1,6 @@
 package com.upgrad.quora.db.entity;
 
+import org.apache.commons.lang3.builder.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -8,51 +9,52 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+
 @Entity
 @Table(name = "user_auth")
+@NamedQueries({
+        @NamedQuery(name = "UserAuths.getByAccessToken", query = "SELECT u FROM UserAuthEntity u WHERE u.accessToken=:accessToken")
+})
 public class UserAuthEntity implements Serializable {
-
     @Id
-    @Column(name = "id")
+    @Column(name = "ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    @Column(name = "uuid")
+    @Column(name = "UUID")
     @Size(max = 200)
     @NotNull
     private String uuid;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @NotNull
-    private UserEntity user;
-
-    @Column(name = "access_token")
-    @NotNull
+    @Column(name = "ACCESS_TOKEN")
     @Size(max = 500)
+    @NotNull
     private String accessToken;
 
-    @Column(name = "expires_at")
+    @Column(name = "EXPIRES_AT")
     @NotNull
     private LocalDateTime expiresAt;
 
-    @Column(name = "login_at")
+    @Column(name = "LOGIN_AT")
     @NotNull
     private LocalDateTime loginAt;
 
-    @Column(name = "logout_at")
+    @Column(name = "LOGOUT_AT")
     private LocalDateTime logoutAt;
 
-    public Long getId() {
+    @ManyToOne
+    @JoinColumn(name = "USER_ID")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ToStringExclude
+    @HashCodeExclude
+    @EqualsExclude
+    private UserEntity user;
+
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -62,14 +64,6 @@ public class UserAuthEntity implements Serializable {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public UserEntity getUser() {
-        return user;
-    }
-
-    public void setUser(UserEntity user) {
-        this.user = user;
     }
 
     public String getAccessToken() {
@@ -104,14 +98,22 @@ public class UserAuthEntity implements Serializable {
         this.logoutAt = logoutAt;
     }
 
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
+
     @Override
     public boolean equals(Object obj) {
-        return new EqualsBuilder().append(this, obj).isEquals();
+        return EqualsBuilder.reflectionEquals(this,obj,Boolean.FALSE);
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(this).hashCode();
+        return HashCodeBuilder.reflectionHashCode(this,Boolean.FALSE);
     }
 
     @Override

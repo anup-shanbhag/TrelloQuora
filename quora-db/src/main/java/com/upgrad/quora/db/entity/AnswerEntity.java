@@ -1,18 +1,15 @@
 package com.upgrad.quora.db.entity;
 
+import org.apache.commons.lang3.builder.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.context.annotation.EnableMBeanExport;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDate;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+
 @Entity
 @Table(name = "answer")
 public class AnswerEntity implements Serializable {
@@ -39,12 +36,18 @@ public class AnswerEntity implements Serializable {
     @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
+    @ToStringExclude
+    @HashCodeExclude
+    @EqualsExclude
     private UserEntity user;
 
     @ManyToOne
     @JoinColumn(name = "question_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
+    @ToStringExclude
+    @HashCodeExclude
+    @EqualsExclude
     private QuestionEntity question;
 
     public Integer getId() {
@@ -97,12 +100,12 @@ public class AnswerEntity implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        return new EqualsBuilder().append(this, obj).isEquals();
+        return EqualsBuilder.reflectionEquals(this, obj,Boolean.FALSE);
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(this).hashCode();
+        return HashCodeBuilder.reflectionHashCode(this,Boolean.FALSE);
     }
 
     @Override

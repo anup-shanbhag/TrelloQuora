@@ -1,10 +1,7 @@
 package com.upgrad.quora.db.entity;
 
-import org.springframework.data.repository.NoRepositoryBean;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.*;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -12,6 +9,9 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "users")
+@NamedQueries({
+        @NamedQuery(name = "Users.getById", query = "SELECT u FROM UserEntity u WHERE u.uuid = :uuid")
+})
 public class UserEntity implements Serializable {
     @Id
     @Column(name = "id")
@@ -19,38 +19,39 @@ public class UserEntity implements Serializable {
     private Integer id;
 
     @Column(name = "uuid")
-    @NotNull
     @Size(max = 200)
+    @NotNull
     private String uuid;
 
     @Column(name = "firstname")
-    @NotNull
     @Size(max = 30)
+    @NotNull
     private String firstName;
 
     @Column(name = "lastname")
-    @NotNull
     @Size(max = 30)
+    @NotNull
     private String lastName;
 
-    @Column(name = "username")
-    @NotNull
+    @Column(name = "username", unique = true)
     @Size(max = 30)
+    @NotNull
     private String userName;
 
-    @Column(name = "email")
-    @NotNull
+    @Column(name = "email", unique = true)
     @Size(max = 50)
+    @NotNull
     private String email;
 
+    @ToStringExclude
     @Column(name = "password")
-    @NotNull
     @Size(max = 255)
+    @NotNull
     private String password;
 
+    @ToStringExclude
     @Column(name = "salt")
     @NotNull
-    @Size(max = 200)
     private String salt;
 
     @Column(name = "country")
@@ -179,12 +180,12 @@ public class UserEntity implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        return new EqualsBuilder().append(this, obj).isEquals();
+        return EqualsBuilder.reflectionEquals(this,obj,Boolean.FALSE);
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(this).hashCode();
+        return HashCodeBuilder.reflectionHashCode(this,Boolean.FALSE);
     }
 
     @Override

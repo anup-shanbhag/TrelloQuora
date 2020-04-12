@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Import;
  * This class launches a Spring Application from Java main method.
  */
 @SpringBootApplication
-@Import({ServiceConfiguration.class,DbConfiguration.class})
+@Import({DbConfiguration.class,ServiceConfiguration.class})
 public class QuoraApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(QuoraApiApplication.class, args);

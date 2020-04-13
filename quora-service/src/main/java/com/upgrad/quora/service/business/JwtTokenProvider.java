@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.upgrad.quora.service.common.GenericErrorCode;
 import com.upgrad.quora.service.common.UnexpectedException;
+import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -13,6 +14,7 @@ import java.util.UUID;
 /**
  * This class is used in the project to provide JWT token after successful authentication
  */
+
 public class JwtTokenProvider {
     private static final String TOKEN_ISSUER = "https://quora.io";
 

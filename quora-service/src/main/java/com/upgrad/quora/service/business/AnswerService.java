@@ -30,7 +30,6 @@ public class AnswerService {
         return answerDao.createAnswer(answer);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
     public AnswerEntity getAnswer(String answerId) throws AnswerNotFoundException {
         AnswerEntity answer = answerDao.getAnswer(answerId);
         if(answer==null){

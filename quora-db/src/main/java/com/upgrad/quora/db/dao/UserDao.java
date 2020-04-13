@@ -14,10 +14,10 @@ public class UserDao {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public UserEntity getUser(String userUuid) {
+    public UserEntity getUser(String userId) {
         try {
             return entityManager.createNamedQuery("Users.getById", UserEntity.class)
-                    .setParameter("uuid", userUuid)
+                    .setParameter("uuid", userId)
                     .getSingleResult();
         } catch (NoResultException nre) {
             return null;
@@ -32,5 +32,33 @@ public class UserDao {
         } catch (NoResultException nre) {
             return null;
         }
+    }
+
+    public void deleteUser(UserEntity user) {
+        entityManager.remove(user);
+    }
+
+    public UserEntity createUser(UserEntity user) {
+        entityManager.persist(user);
+        return user;
+    }
+
+    public UserEntity getUserByEmailOrUserName(String emailOrUserName) {
+        try{
+            return entityManager.createNamedQuery("Users.userByEmailOrUserName", UserEntity.class).setParameter("emailOrUserName",emailOrUserName).getSingleResult();
+        }
+        catch(NoResultException e){
+            return null;
+        }
+    }
+
+    public UserAuthEntity createUserAuth(UserAuthEntity userAuth) {
+        entityManager.persist(userAuth);
+        return userAuth;
+    }
+
+    public UserAuthEntity updateUserAuth(UserAuthEntity userAuth) {
+        entityManager.merge(userAuth);
+        return userAuth;
     }
 }

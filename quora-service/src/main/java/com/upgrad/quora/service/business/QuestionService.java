@@ -36,7 +36,6 @@ public class QuestionService {
      * @return Question entity from the database table with id = questionId
      * @throws InvalidQuestionException
      */
-    @Transactional(propagation = Propagation.REQUIRED)
     public QuestionEntity getQuestion (String questionId) throws InvalidQuestionException {
         QuestionEntity question = questionDao.getQuestion(questionId);
         if(question==null){
@@ -56,7 +55,7 @@ public class QuestionService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public String editQuestion (QuestionEntity question, UserEntity user) throws AuthorizationFailedException {
-        if(user.getId().equals(question.getUser().getId()) || user.getRole().equalsIgnoreCase(UserRole.ADMIN.getRole())){
+        if(user.getId().equals(question.getUser().getId())){
             questionDao.updateQuestion(question);
             return question.getUuid();
         }

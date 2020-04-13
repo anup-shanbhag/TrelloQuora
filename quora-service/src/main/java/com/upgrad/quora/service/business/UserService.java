@@ -3,12 +3,13 @@ package com.upgrad.quora.service.business;
 import com.upgrad.quora.db.dao.UserDao;
 import com.upgrad.quora.db.entity.UserAuthEntity;
 import com.upgrad.quora.db.entity.UserEntity;
+import com.upgrad.quora.service.common.UnexpectedException;
 import com.upgrad.quora.service.constants.UserRole;
-import com.upgrad.quora.service.exception.AuthenticationFailedException;
-import com.upgrad.quora.service.exception.AuthorizationFailedException;
-import com.upgrad.quora.service.exception.SignOutRestrictedException;
-import com.upgrad.quora.service.exception.UserNotFoundException;
+import com.upgrad.quora.service.exception.*;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,12 +83,28 @@ public class UserService {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
-    public UserEntity createUser(UserEntity user) {
+    public UserEntity createUser(UserEntity user) throws SignUpRestrictedException {
         List<String> encryptedTexts = Arrays.asList(cryptographyProvider.encrypt(user.getPassword()));
         user.setSalt(encryptedTexts.get(0));
         user.setPassword(encryptedTexts.get(1));
-        return userDao.createUser(user);
+        try {
+            user = userDao.createUser(user);
+            return user;
+        }
+        catch(DataIntegrityViolationException e){
+            if(e.getCause() instanceof ConstraintViolationException){
+                String constraintName = ((ConstraintViolationException)e.getCause()).getConstraintName();
+                if(StringUtils.containsIgnoreCase(constraintName,"userName")){
+                    throw new SignUpRestrictedException ("SGR-001","Try any other Username, this Username has already been taken");
+                }
+                else{
+                    throw new SignUpRestrictedException ("SGR-002","This user has already been registered, try with any other emailId");
+                }
+            }
+            else{
+                throw e;
+            }
+        }
     }
 
     @Transactional(propagation = Propagation.REQUIRED)

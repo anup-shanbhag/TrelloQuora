@@ -11,8 +11,11 @@ import com.upgrad.quora.service.constants.UserRole;
 import com.upgrad.quora.service.constants.UserStatus;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.SignOutRestrictedException;
+import com.upgrad.quora.service.exception.SignUpRestrictedException;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.awt.*;
 import java.util.*;
 
 @RestController
@@ -32,8 +34,8 @@ public class UserController {
     @Autowired
     UserService userService;
 
-    @RequestMapping(path = "/user/signup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<SignupUserResponse> registerUser(@RequestHeader("authorization") String authorization, SignupUserRequest request){
+    @RequestMapping(path = "/signup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<SignupUserResponse> registerUser(SignupUserRequest request) throws SignUpRestrictedException {
         UserEntity user = new UserEntity();
         user.setUuid(UUID.randomUUID().toString());
         user.setFirstName(request.getFirstName());
@@ -52,7 +54,7 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @RequestMapping(path = "/user/signin", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(path = "/signin", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<SigninResponse> loginUser(@RequestHeader("authorization") String authorization) throws AuthenticationFailedException {
         String token = (authorization.contains("Basic ")) ? StringUtils.substringAfter(authorization, "Basic ") : authorization;
         StringTokenizer tokens =  new StringTokenizer(new String (Base64.getDecoder().decode(token)));
@@ -63,7 +65,7 @@ public class UserController {
         return new ResponseEntity<SigninResponse>(response, headers, HttpStatus.OK);
     }
 
-    @RequestMapping(path = "/user/signout", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(path = "/signout", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<SignoutResponse> logoutUser(@RequestHeader("authorization") String authorization) throws SignOutRestrictedException {
         String token = (authorization.contains("Basic ")) ? StringUtils.substringAfter(authorization, "Basic ") : authorization;
         UserEntity user = userService.invalidateAuthorization(token);

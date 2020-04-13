@@ -1,10 +1,8 @@
 package com.upgrad.quora.api.exception;
 
 import com.upgrad.quora.api.model.ErrorResponse;
-import com.upgrad.quora.service.exception.AuthorizationFailedException;
+import com.upgrad.quora.service.exception.*;
 import com.upgrad.quora.service.common.UnexpectedException;
-import com.upgrad.quora.service.exception.UserNotFoundException;
-import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -20,6 +18,21 @@ public class RestExceptionHandler {
                 new ErrorResponse().code(afe.getCode()).message(afe.getErrorMessage()), HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidQuestionException(AuthenticationFailedException exception, WebRequest request){
+        return new ResponseEntity<>(new ErrorResponse().code(exception.getCode()).message(exception.getErrorMessage()), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(SignOutRestrictedException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidQuestionException(SignOutRestrictedException exception, WebRequest request){
+        return new ResponseEntity<>(new ErrorResponse().code(exception.getCode()).message(exception.getErrorMessage()), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(SignUpRestrictedException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidQuestionException(SignUpRestrictedException exception, WebRequest request){
+        return new ResponseEntity<>(new ErrorResponse().code(exception.getCode()).message(exception.getErrorMessage()), HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> resourceNotFoundException(UserNotFoundException unf, WebRequest webRequest) {
         return new ResponseEntity<ErrorResponse>(
@@ -28,6 +41,11 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(InvalidQuestionException.class)
     public ResponseEntity<ErrorResponse> handleInvalidQuestionException(InvalidQuestionException exception, WebRequest request){
+        return new ResponseEntity<>(new ErrorResponse().code(exception.getCode()).message(exception.getErrorMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(AnswerNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidQuestionException(AnswerNotFoundException exception, WebRequest request){
         return new ResponseEntity<>(new ErrorResponse().code(exception.getCode()).message(exception.getErrorMessage()), HttpStatus.NOT_FOUND);
     }
 

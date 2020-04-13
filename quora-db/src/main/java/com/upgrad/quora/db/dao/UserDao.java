@@ -3,6 +3,8 @@ package com.upgrad.quora.db.dao;
 import com.upgrad.quora.db.entity.UserAuthEntity;
 import com.upgrad.quora.db.entity.UserEntity;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -38,6 +40,7 @@ public class UserDao {
         entityManager.remove(user);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public UserEntity createUser(UserEntity user) {
         entityManager.persist(user);
         return user;

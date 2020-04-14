@@ -34,6 +34,12 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    /**
+     * This is used to register a user in the application. It takes profile information as input and registers the user in the application.
+     * @param request User/Profile Information
+     * @return Response Entity with HttpStatus code, id of registered user and message
+     * @throws SignUpRestrictedException on duplicate username/email
+     */
     @RequestMapping(path = "/signup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<SignupUserResponse> registerUser(SignupUserRequest request) throws SignUpRestrictedException {
         UserEntity user = new UserEntity();
@@ -54,17 +60,29 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    /**
+     * This is used to sing in a user in the application. It takes the login information of the user and logs him in.
+     * @param authorization Authorization token from request header
+     * @return Response Entity with HttpStatus code, id of user who signed in, message and authorization token (for further communication)
+     * @throws AuthenticationFailedException on Invalid username/password
+     */
     @RequestMapping(path = "/signin", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<SigninResponse> loginUser(@RequestHeader("authorization") String authorization) throws AuthenticationFailedException {
         String token = (authorization.contains("Basic ")) ? StringUtils.substringAfter(authorization, "Basic ") : authorization;
         StringTokenizer tokens =  new StringTokenizer(new String (Base64.getDecoder().decode(token)));
         UserAuthEntity userAuth = userService.authenticateUser(tokens.nextToken(),tokens.nextToken());
-        SigninResponse response = new SigninResponse().id("").message(UserStatus.SIGN_IN_OK.getStatus());
+        SigninResponse response = new SigninResponse().id(userAuth.getUuid()).message(UserStatus.SIGN_IN_OK.getStatus());
         MultiValueMap<String,String> headers = new HttpHeaders();
         headers.add("access_token",userAuth.getAccessToken());
         return new ResponseEntity<SigninResponse>(response, headers, HttpStatus.OK);
     }
 
+    /**
+     * This is used to log a user out of the application. It takes authorization token as input and logs the user out of the application.
+     * @param authorization Authorization token from request header
+     * @return Response Entity with HttpStatus code, id of the user who was signed out and message.
+     * @throws SignOutRestrictedException if the user is not signed in
+     */
     @RequestMapping(path = "/signout", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<SignoutResponse> logoutUser(@RequestHeader("authorization") String authorization) throws SignOutRestrictedException {
         String token = (authorization.contains("Basic ")) ? StringUtils.substringAfter(authorization, "Basic ") : authorization;

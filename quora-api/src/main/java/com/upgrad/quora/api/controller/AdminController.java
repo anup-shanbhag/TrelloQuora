@@ -20,6 +20,15 @@ public class AdminController {
     @Autowired
     UserService userService;
 
+    /**
+     * This is used to delete a specific user in the application. It takes authorization token and the user id  of the user and removes the user from the application.
+     * @param userId Id of the user to be deleted
+     * @param authorization Authorization token from request header
+     * @return Response Entity with Http Status Code, Id of the deleted user and message
+     * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found
+     * @throws AuthorizationFailedException if the user is not an admin
+     * @throws UserNotFoundException if userId is invalid (no such user exists)
+     */
     @RequestMapping(path = "/user/{userId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<UserDeleteResponse> deleteUser (@PathVariable("userId") String userId, @RequestHeader("authorization") String authorization) throws AuthorizationFailedException, UserNotFoundException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;

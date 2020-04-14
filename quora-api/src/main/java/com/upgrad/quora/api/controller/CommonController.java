@@ -19,6 +19,14 @@ public class CommonController {
     @Autowired
     private UserService userService;
 
+    /**
+     * This is user to fetch the details of a user registered in the application. It takes the authorization token and the userId as input and fetches the profile information for the user.
+     * @param authorization Authorization token from request header
+     * @param userId Id of the user to be retrieved
+     * @return Response entity with Http Status code and profile information of the input user
+     * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found
+     * @throws UserNotFoundException if userId is invalid (no such user exists)
+     */
     @RequestMapping(method = RequestMethod.GET, path = "/{userId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<UserDetailsResponse> getUserProfile(@RequestHeader("authorization") final String authorization,
                                                               @PathVariable("userId") final String userId)

@@ -71,13 +71,12 @@ public class QuestionController {
     }
 
     /**
-     * This is used to edit a question that has been posted by a user. Note, only the question owner or an admin can edit a question. It takes questionId, question content and authorization token to find and update a question in the database.
+     * This is used to edit a question that has been posted by a user. Note, only the question owner can edit a question. It takes questionId, question content and authorization token to find and update a question in the database.
      * @param authorization Authorization token from request header
      * @param questionId Id of the question to delete
      * @param request An input request with question content
      * @return Response Entity with questionId, message and Http Status Code
      * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found.
-     * @throws AuthorizationFailedException if a non-admin non-owner(question) attempts to edit a question.
      * @throws InvalidQuestionException if a question with input questionId doesn't exist
      */
     @RequestMapping(path="/edit/{questionId}",method=RequestMethod.PUT,consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)

@@ -55,7 +55,7 @@ public class QuestionDao {
 
     /**
      * Method fetches questions available in the database irrespective of owner or posted user
-     * @return a list of all questions available in the database
+     * @return a list of all questions available in the database, empty list is no questions are found
      */
     public List<QuestionEntity> getAllQuestions(){
         return entityManager.createNamedQuery("Questions.fetchAll").getResultList();
@@ -64,7 +64,7 @@ public class QuestionDao {
     /**
      * Method takes user as a parameter and fetches all questions posted by the user
      * @param user a user whose questions are to be fetched
-     * @return a list questions posted by the user
+     * @return a list questions posted by the user, empty list is no questions are found
      */
     public List<QuestionEntity> getUserQuestions(UserEntity user){
         return entityManager.createNamedQuery("Questions.fetchByUserId").setParameter("user",user).getResultList();

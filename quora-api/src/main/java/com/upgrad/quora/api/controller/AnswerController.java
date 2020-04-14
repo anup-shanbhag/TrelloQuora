@@ -89,7 +89,7 @@ public class AnswerController {
      * @param authorization Authorization token from request header
      * @return Response entity with Http Status code, id of answer updated and message
      * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found
-     * @throws AuthorizationFailedException f a non-admin non-owner(question) attempts to delete an answer
+     * @throws AuthorizationFailedException if a non-admin non-owner attempts to delete an answer
      * @throws AnswerNotFoundException if an answer with input questionId doesn't exist
      */
     @RequestMapping(path = "/answer/delete/{answerId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

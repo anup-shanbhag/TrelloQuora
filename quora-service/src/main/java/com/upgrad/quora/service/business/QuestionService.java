@@ -51,7 +51,7 @@ public class QuestionService {
      * @param question Question to to be removed
      * @param user Logged in User
      * @return Id of the updated question
-     * @throws AuthorizationFailedException if logged in user is neither an admin nor the question owner
+     * @throws AuthorizationFailedException if logged in user is not the question owner
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public String editQuestion (QuestionEntity question, UserEntity user) throws AuthorizationFailedException {
@@ -84,7 +84,7 @@ public class QuestionService {
 
     /**
      * Method returns a list of all questions available in the database irrespective of owner or posted user
-     * @return a list of all questions available in the database
+     * @return a list of all questions available in the database, empty list if no questions are available
      */
     public List<QuestionEntity> getAllQuestions(){
         return questionDao.getAllQuestions();
@@ -93,7 +93,7 @@ public class QuestionService {
     /**
      * Method returns a list of all questions posted by a specific user
      * @param user a user whose questions are to be fetched
-     * @return a list of questions posted by the input user
+     * @return a list of questions posted by the input user, empty list if no questions are available
      */
     public List<QuestionEntity> getUserQuestions(UserEntity user){
         return questionDao.getUserQuestions(user);

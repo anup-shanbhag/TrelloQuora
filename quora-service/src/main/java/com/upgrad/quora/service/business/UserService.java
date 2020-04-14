@@ -30,12 +30,12 @@ public class UserService {
     PasswordCryptographyProvider cryptographyProvider;
 
     /**
-     *
-     * @param userId
-     * @param authorizationToken
-     * @return
-     * @throws AuthorizationFailedException
-     * @throws UserNotFoundException
+     * Method takes userId and authorizationToken as paremeter and fetches user information of user with uuid = userId
+     * @param userId User Id
+     * @param authorizationToken Authorization Token
+     * @return desired User Information
+     * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found
+     * @throws UserNotFoundException if no such user exists
      */
     public UserEntity getUserById(final String userId, final String authorizationToken) throws AuthorizationFailedException, UserNotFoundException {
         UserEntity user = this.getCurrentUser(authorizationToken);
@@ -66,6 +66,14 @@ public class UserService {
         }
     }
 
+    /**
+     * Method takes current user and userId of the user to delete, and removes the user from the application if the current user is an admin.
+     * @param user current user (logged in user)
+     * @param userId Id of the user to be deleted
+     * @return deleted userId
+     * @throws AuthorizationFailedException if current user is not an admin
+     * @throws UserNotFoundException if no such user exists
+     */
     @Transactional(propagation = Propagation.REQUIRED)
     public String deleteUser(UserEntity user, String userId) throws AuthorizationFailedException, UserNotFoundException {
         if(user.getRole().equalsIgnoreCase(UserRole.ADMIN.getRole())){
@@ -83,6 +91,12 @@ public class UserService {
         }
     }
 
+    /**
+     * Methods takes a new user as a parameter and add it to the application database
+     * @param user New User
+     * @return creates User
+     * @throws SignUpRestrictedException if new user's username/email is already taken
+     */
     public UserEntity createUser(UserEntity user) throws SignUpRestrictedException {
         List<String> encryptedTexts = Arrays.asList(cryptographyProvider.encrypt(user.getPassword()));
         user.setSalt(encryptedTexts.get(0));
@@ -107,6 +121,13 @@ public class UserService {
         }
     }
 
+    /**
+     * Method takes user's login info and logs the user into the application.
+     * @param userName User's username
+     * @param password User's password
+     * @return return User Authentication Information
+     * @throws AuthenticationFailedException if user's login information (username/password) are invalid
+     */
     @Transactional(propagation = Propagation.REQUIRED)
     public UserAuthEntity authenticateUser(String userName, String password) throws AuthenticationFailedException {
         UserEntity user = userDao.getUserByEmailOrUserName(userName);
@@ -131,6 +152,12 @@ public class UserService {
         }
     }
 
+    /**
+     * Method takes the authorization token and logs a user out of the application
+     * @param authorizationToken authorization token
+     * @return logged out User
+     * @throws SignOutRestrictedException if the user is not signed in
+     */
     @Transactional(propagation = Propagation.REQUIRED)
     public UserEntity invalidateAuthorization(String authorizationToken) throws SignOutRestrictedException {
         UserAuthEntity userAuth = userDao.getUserAuthToken(authorizationToken);

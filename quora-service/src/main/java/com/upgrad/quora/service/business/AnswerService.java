@@ -9,6 +9,7 @@ import com.upgrad.quora.db.entity.UserEntity;
 import com.upgrad.quora.service.constants.UserRole;
 import com.upgrad.quora.service.exception.AnswerNotFoundException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
+import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,10 +22,9 @@ public class AnswerService {
 
     @Autowired
     AnswerDao answerDao;
+
     @Autowired
-    QuestionDao questionDao;
-    @Autowired
-    UserDao userDao;
+    QuestionService questionService;
 
     /**
      * Method takes an answer as input and stores it in the database
@@ -90,10 +90,15 @@ public class AnswerService {
 
     /**
      * Method takes a question as parameter and fetches all answers posted on it from the database
-     * @param question question for which all answers are to be fetched
+     * @param questionId Id of question for which all answers are to be fetched
      * @return List of all answers for question, empty list of no answers are available
      */
-    public List<AnswerEntity> getAnswersForQuestion(QuestionEntity question) {
-        return answerDao.getAnswersByQuestion(question);
+    public List<AnswerEntity> getAnswersForQuestion(String questionId) throws InvalidQuestionException {
+        try{
+            QuestionEntity question = questionService.getQuestion(questionId);
+            return answerDao.getAnswersByQuestion(question);
+        }catch(InvalidQuestionException e){
+            throw new InvalidQuestionException("QUES-001","The question with entered uuid whose details are to be seen does not exist");
+        }
     }
 }

@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -111,18 +112,16 @@ public class AnswerController {
      * @throws InvalidQuestionException if a question with input questionId doesn't exist
      */
     @RequestMapping(path = "/answer/all/{questionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerDetailsResponse> getAllAnswersToQuestion(@PathVariable("questionId") String questionId, @RequestHeader("authorization") String authorization) throws AuthorizationFailedException, InvalidQuestionException {
-        try{
-            String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-            UserEntity user = userService.getCurrentUser(token);
-            QuestionEntity question = questionService.getQuestion(questionId);
-            List<AnswerEntity> answers = answerService.getAnswersForQuestion(question);
-            answers.forEach(answer-> System.out.println(answer.toString()));
-            AnswerDetailsResponse response = new AnswerDetailsResponse();
-            return new ResponseEntity<>(response,HttpStatus.OK);
+    public ResponseEntity<List<AnswerDetailsResponse>> getAllAnswersToQuestion(@PathVariable("questionId") String questionId, @RequestHeader("authorization") String authorization) throws AuthorizationFailedException, InvalidQuestionException {
+        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        UserEntity user = userService.getCurrentUser(token);
+        List<AnswerDetailsResponse> response = new ArrayList<>();
+        answerService.getAnswersForQuestion(questionId).forEach (answer -> response.add(new AnswerDetailsResponse().id(answer.getUuid()).answerContent(answer.getAnswer()).questionContent(answer.getQuestion().getContent())));
+        if(response.isEmpty()){
+            return new ResponseEntity<>(response,HttpStatus.NO_CONTENT);
         }
-        catch(InvalidQuestionException e){
-            throw new InvalidQuestionException("QUES-001","The question with entered uuid whose details are to be seen does not exist");
+        else{
+            return new ResponseEntity<>(response,HttpStatus.OK);
         }
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,14 +61,17 @@ public class QuestionController {
      * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found.
      */
     @RequestMapping(path="/all",method=RequestMethod.GET,produces=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QuestionDetailsResponse> getAllQuestions(@RequestHeader("authorization") String authorization) throws AuthorizationFailedException {
+    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestions(@RequestHeader("authorization") String authorization) throws AuthorizationFailedException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
         UserEntity user = userService.getCurrentUser(token);
-        List<QuestionEntity> questions = questionService.getAllQuestions();
-        System.out.println(questions.size());
-        questions.forEach(question -> System.out.println(question.toString()));
-        QuestionDetailsResponse response = new QuestionDetailsResponse();
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        List<QuestionDetailsResponse> response = new ArrayList<>();
+        questionService.getAllQuestions().forEach (question -> response.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
+        if(response.isEmpty()){
+            return new ResponseEntity<>(response,HttpStatus.NO_CONTENT);
+        }
+        else{
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }
     }
 
     /**
@@ -122,14 +126,17 @@ public class QuestionController {
      * @throws AuthorizationFailedException if userId is invalid (no such user exists)
      */
     @RequestMapping(path="/all/{userId}",method=RequestMethod.GET,produces=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QuestionDetailsResponse> getUserQuestions(@RequestHeader("authorization") String authorization, @PathVariable("userId")String userId) throws AuthorizationFailedException, UserNotFoundException, UserNotFoundException {
+    public ResponseEntity<List<QuestionDetailsResponse>> getUserQuestions(@RequestHeader("authorization") String authorization, @PathVariable("userId")String userId) throws AuthorizationFailedException, UserNotFoundException, UserNotFoundException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
         UserEntity user = userService.getUserById(userId,token);
-        List<QuestionEntity> questions = questionService.getUserQuestions(user);
-        System.out.println(questions.size());
-        questions.forEach(question -> System.out.println(question.toString()));
-        QuestionDetailsResponse response = new QuestionDetailsResponse();
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        List<QuestionDetailsResponse> response = new ArrayList<>();
+        questionService.getUserQuestions(user).forEach (question -> response.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
+        if(response.isEmpty()){
+            return new ResponseEntity<>(response,HttpStatus.NO_CONTENT);
+        }
+        else{
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }
     }
 
 

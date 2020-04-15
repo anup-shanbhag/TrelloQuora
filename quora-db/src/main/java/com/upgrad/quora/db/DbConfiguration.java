@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@EntityScan("com.upgrad.quora.db.entity")
-@EnableJpaRepositories("com.upgrad.quora.db.dao")
+@EntityScan(basePackages = "com.upgrad.quora.db.entity")
+@EnableJpaRepositories(basePackages = "com.upgrad.quora.db.dao")
 public class DbConfiguration {
 }

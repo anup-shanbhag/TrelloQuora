@@ -3,7 +3,7 @@ package com.upgrad.quora.service.business;
 import com.upgrad.quora.db.dao.UserDao;
 import com.upgrad.quora.db.entity.UserAuthEntity;
 import com.upgrad.quora.db.entity.UserEntity;
-import com.upgrad.quora.service.common.UnexpectedException;
+import com.upgrad.quora.service.constants.ErrorConditions;
 import com.upgrad.quora.service.constants.UserRole;
 import com.upgrad.quora.service.exception.*;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +41,7 @@ public class UserService {
         UserEntity user = this.getCurrentUser(authorizationToken);
         user = userDao.getUser(userId);
         if(user==null){
-            throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
+            throw new UserNotFoundException(ErrorConditions.USER_NOT_FOUND.getCode(), ErrorConditions.USER_NOT_FOUND.getMessage());
         }
         else{
             return user;
@@ -57,10 +57,10 @@ public class UserService {
     public UserEntity getCurrentUser(String authorizationToken) throws AuthorizationFailedException {
         UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
         if (userAuthEntity == null) {
-            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+            throw new AuthorizationFailedException(ErrorConditions.USER_NOT_SIGNED_IN.getCode(), ErrorConditions.USER_NOT_SIGNED_IN.getMessage());
         } else if ((userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
                 || userAuthEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get user details");
+            throw new AuthorizationFailedException(ErrorConditions.USER_GET_AUTH_FAILURE.getCode(), ErrorConditions.USER_GET_AUTH_FAILURE.getMessage());
         } else {
             return userAuthEntity.getUser();
         }
@@ -83,11 +83,11 @@ public class UserService {
                 return removeUser.getUuid();
             }
             else{
-                throw new UserNotFoundException("USR-001","User with entered uuid to be deleted does not exist");
+                throw new UserNotFoundException(ErrorConditions.USER_DELETE_FAILURE.getCode(),ErrorConditions.USER_DELETE_FAILURE.getMessage());
             }
         }
         else{
-            throw new AuthorizationFailedException("ATHR-003","Unauthorized Access, Entered user is not an admin");
+            throw new AuthorizationFailedException(ErrorConditions.USER_DELETE_UNAUTHORIZED.getCode(),ErrorConditions.USER_DELETE_UNAUTHORIZED.getMessage());
         }
     }
 
@@ -109,10 +109,10 @@ public class UserService {
             if(e.getCause() instanceof ConstraintViolationException){
                 String constraintName = ((ConstraintViolationException)e.getCause()).getConstraintName();
                 if(StringUtils.containsIgnoreCase(constraintName,"userName")){
-                    throw new SignUpRestrictedException ("SGR-001","Try any other Username, this Username has already been taken");
+                    throw new SignUpRestrictedException (ErrorConditions.USERNAME_ALREADY_EXISTS.getCode(),ErrorConditions.USERNAME_ALREADY_EXISTS.getMessage());
                 }
                 else{
-                    throw new SignUpRestrictedException ("SGR-002","This user has already been registered, try with any other emailId");
+                    throw new SignUpRestrictedException (ErrorConditions.EMAIL_ALREADY_EXISTS.getCode(),ErrorConditions.EMAIL_ALREADY_EXISTS.getMessage());
                 }
             }
             else{
@@ -144,11 +144,11 @@ public class UserService {
                 return userDao.createUserAuth(userAuth);
             }
             else{
-                throw new AuthenticationFailedException("ATH-002","Password failed");
+                throw new AuthenticationFailedException(ErrorConditions.USER_WRONG_PASSWORD.getCode(),ErrorConditions.USER_WRONG_PASSWORD.getMessage());
             }
         }
         else{
-            throw new AuthenticationFailedException("ATH-001","This username does not exist");
+            throw new AuthenticationFailedException(ErrorConditions.USERNAME_NOT_FOUND.getCode(),ErrorConditions.USERNAME_NOT_FOUND.getMessage());
         }
     }
 
@@ -167,7 +167,7 @@ public class UserService {
             return userDao.updateUserAuth(userAuth).getUser();
         }
         else{
-            throw new SignOutRestrictedException("SGR-001","User is not Signed in");
+            throw new SignOutRestrictedException(ErrorConditions.USER_SIGNOUT_ERROR.getCode(),ErrorConditions.USER_SIGNOUT_ERROR.getMessage());
         }
     }
 }

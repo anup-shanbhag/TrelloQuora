@@ -6,6 +6,7 @@ import com.upgrad.quora.db.dao.UserDao;
 import com.upgrad.quora.db.entity.AnswerEntity;
 import com.upgrad.quora.db.entity.QuestionEntity;
 import com.upgrad.quora.db.entity.UserEntity;
+import com.upgrad.quora.service.constants.ErrorConditions;
 import com.upgrad.quora.service.constants.UserRole;
 import com.upgrad.quora.service.exception.AnswerNotFoundException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
@@ -45,7 +46,7 @@ public class AnswerService {
     public AnswerEntity getAnswer(String answerId) throws AnswerNotFoundException {
         AnswerEntity answer = answerDao.getAnswer(answerId);
         if(answer==null){
-            throw new AnswerNotFoundException("ANS-001","Entered answer uuid does not exist");
+            throw new AnswerNotFoundException(ErrorConditions.ANS_NOT_FOUND.getCode(),ErrorConditions.ANS_NOT_FOUND.getMessage());
         }
         else{
             return answer;
@@ -66,7 +67,7 @@ public class AnswerService {
             return answer.getUuid();
         }
         else{
-            throw new AuthorizationFailedException("ATHR-003","Only the answer owner can edit the answer");
+            throw new AuthorizationFailedException(ErrorConditions.ANS_EDIT_UNAUTHORIZED.getCode(),ErrorConditions.ANS_EDIT_UNAUTHORIZED.getMessage());
         }
     }
 
@@ -84,7 +85,7 @@ public class AnswerService {
             return answer.getUuid();
         }
         else{
-            throw new AuthorizationFailedException("ATHR-003","Only the answer owner or admin can delete the answer");
+            throw new AuthorizationFailedException(ErrorConditions.ANS_DELETE_UNAUTHORIZED.getCode(),ErrorConditions.ANS_DELETE_UNAUTHORIZED.getMessage());
         }
     }
 
@@ -98,7 +99,7 @@ public class AnswerService {
             QuestionEntity question = questionService.getQuestion(questionId);
             return answerDao.getAnswersByQuestion(question);
         }catch(InvalidQuestionException e){
-            throw new InvalidQuestionException("QUES-001","The question with entered uuid whose details are to be seen does not exist");
+            throw new InvalidQuestionException(ErrorConditions.ANS_GET_FAILURE.getCode(),ErrorConditions.ANS_GET_FAILURE.getMessage());
         }
     }
 }

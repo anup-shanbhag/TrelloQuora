@@ -32,7 +32,7 @@ public class CommonController {
                                                               @PathVariable("userId") final String userId)
             throws AuthorizationFailedException, UserNotFoundException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        UserEntity user = userService.getUserById(userId, token);
+        UserEntity user = userService.getUserById(token, userId);
         UserDetailsResponse userDetailsResponse = new UserDetailsResponse()
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())

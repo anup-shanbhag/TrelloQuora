@@ -32,19 +32,29 @@ public class UserService {
     /**
      * Method takes userId and authorizationToken as paremeter and fetches user information of user with uuid = userId
      * @param userId User Id
-     * @param authorizationToken Authorization Token
+     * @param token Authorization Token
      * @return desired User Information
      * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found
      * @throws UserNotFoundException if no such user exists
      */
-    public UserEntity getUserById(final String userId, final String authorizationToken) throws AuthorizationFailedException, UserNotFoundException {
-        UserEntity user = this.getCurrentUser(authorizationToken);
-        user = userDao.getUser(userId);
-        if(user==null){
-            throw new UserNotFoundException(ErrorConditions.USER_NOT_FOUND.getCode(), ErrorConditions.USER_NOT_FOUND.getMessage());
-        }
-        else{
-            return user;
+    public UserEntity getUserById(String token, String userId) throws AuthorizationFailedException, UserNotFoundException {
+       try{
+           UserEntity user = getCurrentUser(token);
+           user = userDao.getUser(userId);
+           if(user==null){
+               throw new UserNotFoundException(ErrorConditions.USER_NOT_FOUND.getCode(), ErrorConditions.USER_NOT_FOUND.getMessage());
+           }
+           else{
+               return user;
+           }
+       }
+       catch(AuthorizationFailedException e){
+           if(e.getCode().equals(ErrorConditions.USER_SIGNED_OUT.getCode())){
+               throw new AuthorizationFailedException(ErrorConditions.USER_GET_AUTH_FAILURE.getCode(), ErrorConditions.USER_GET_AUTH_FAILURE.getMessage());
+           }
+           else{
+               throw e;
+           }
         }
     }
 
@@ -68,19 +78,19 @@ public class UserService {
 
     /**
      * Method takes current user and userId of the user to delete, and removes the user from the application if the current user is an admin.
-     * @param user current user (logged in user)
+     * @param token Authorization token of the current logged in user
      * @param userId Id of the user to be deleted
      * @return deleted userId
      * @throws AuthorizationFailedException if current user is not an admin
      * @throws UserNotFoundException if no such user exists
      */
     @Transactional(propagation = Propagation.REQUIRED)
-    public String deleteUser(UserEntity user, String userId) throws AuthorizationFailedException, UserNotFoundException {
-        if(user.getRole().equalsIgnoreCase(UserRole.ADMIN.getRole())){
+    public UserEntity deleteUser(String token, String userId) throws AuthorizationFailedException, UserNotFoundException {
+        UserEntity currentUser = this.getCurrentUser(token);
+        if(currentUser.getRole().equalsIgnoreCase(UserRole.ADMIN.getRole())){
             UserEntity removeUser = userDao.getUser(userId);
             if(removeUser!=null){
-                userDao.deleteUser(removeUser);
-                return removeUser.getUuid();
+                return userDao.deleteUser(removeUser);
             }
             else{
                 throw new UserNotFoundException(ErrorConditions.USER_DELETE_FAILURE.getCode(),ErrorConditions.USER_DELETE_FAILURE.getMessage());

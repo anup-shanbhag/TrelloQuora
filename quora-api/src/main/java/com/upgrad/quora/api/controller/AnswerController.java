@@ -47,8 +47,6 @@ public class AnswerController {
     public ResponseEntity<AnswerResponse> createAnswer(@PathVariable("questionId") String questionId, @RequestHeader("authorization") String authorization, AnswerRequest request) throws AuthorizationFailedException, InvalidQuestionException {
         try{
             String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-            UserEntity user = userService.getCurrentUser(token);
-            QuestionEntity question = questionService.getQuestion(questionId);
             AnswerEntity answer = new AnswerEntity();
             answer.setAnswer(request.getAnswer());
             answer.setDate(LocalDate.now());

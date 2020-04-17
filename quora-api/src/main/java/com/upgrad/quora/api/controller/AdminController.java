@@ -6,6 +6,7 @@ import com.upgrad.quora.service.business.UserService;
 import com.upgrad.quora.service.constants.UserStatus;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
+import com.upgrad.quora.service.utils.AppUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ public class AdminController {
      */
     @RequestMapping(path = "/user/{userId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<UserDeleteResponse> deleteUser (@PathVariable("userId") String userId, @RequestHeader("authorization") String authorization) throws AuthorizationFailedException, UserNotFoundException {
-        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        String token = AppUtils.getBearerAuthToken(authorization);
         UserEntity user = userService.deleteUser(token, userId);
         UserDeleteResponse response = new UserDeleteResponse().id(user.getUuid()).status(UserStatus.DELETED_OK.getStatus());
         return new ResponseEntity<>(response, HttpStatus.OK);

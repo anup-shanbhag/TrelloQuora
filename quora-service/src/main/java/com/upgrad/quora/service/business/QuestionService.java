@@ -153,11 +153,14 @@ public class QuestionService {
         }
         catch(AuthorizationFailedException e){
             if(e.getCode().equals(ErrorConditions.USER_SIGNED_OUT.getCode())){
-                throw new AuthorizationFailedException(ErrorConditions.QUES_GET_ALL_AUTH_FAILURE.getCode(), ErrorConditions.QUES_GET_ALL_AUTH_FAILURE.getMessage());
+                throw new AuthorizationFailedException(ErrorConditions.QUES_GET_AUTH_FAILURE.getCode(), ErrorConditions.QUES_GET_AUTH_FAILURE.getMessage());
             }
             else{
                 throw e;
             }
+        }
+        catch(UserNotFoundException e){
+            throw new UserNotFoundException(ErrorConditions.QUES_GET_FAILURE.getCode(), ErrorConditions.QUES_GET_FAILURE.getMessage());
         }
     }
 

@@ -2,16 +2,12 @@ package com.upgrad.quora.api.controller;
 
 import com.upgrad.quora.api.model.*;
 import com.upgrad.quora.db.entity.AnswerEntity;
-import com.upgrad.quora.db.entity.QuestionEntity;
-import com.upgrad.quora.db.entity.UserEntity;
 import com.upgrad.quora.service.business.AnswerService;
-import com.upgrad.quora.service.business.QuestionService;
-import com.upgrad.quora.service.business.UserService;
 import com.upgrad.quora.service.constants.AnswerStatus;
 import com.upgrad.quora.service.exception.AnswerNotFoundException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
-import org.apache.commons.lang3.StringUtils;
+import com.upgrad.quora.service.utils.AppUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,10 +24,6 @@ import java.util.UUID;
 public class AnswerController {
 
     @Autowired
-    UserService userService;
-    @Autowired
-    QuestionService questionService;
-    @Autowired
     AnswerService answerService;
 
     /**
@@ -46,7 +38,7 @@ public class AnswerController {
     @RequestMapping(path = "/question/{questionId}/answer/create", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerResponse> createAnswer(@PathVariable("questionId") String questionId, @RequestHeader("authorization") String authorization, AnswerRequest request) throws AuthorizationFailedException, InvalidQuestionException {
         try{
-            String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+            String token = AppUtils.getBearerAuthToken(authorization);
             AnswerEntity answer = new AnswerEntity();
             answer.setAnswer(request.getAnswer());
             answer.setDate(LocalDate.now());
@@ -71,7 +63,7 @@ public class AnswerController {
      */
     @RequestMapping(path = "/answer/edit/{answerId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerEditResponse> editAnswer(@PathVariable("answerId") String answerId, @RequestHeader("authorization") String authorization, AnswerEditRequest request) throws AuthorizationFailedException, AnswerNotFoundException {
-        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        String token = AppUtils.getBearerAuthToken(authorization);
         AnswerEntity answer = answerService.getAnswer(answerId);
         answer.setAnswer(request.getContent());
         answer = answerService.editAnswer(token,answer);
@@ -90,7 +82,7 @@ public class AnswerController {
      */
     @RequestMapping(path = "/answer/delete/{answerId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerDeleteResponse> deleteAnswer(@PathVariable("answerId") String answerId, @RequestHeader("authorization") String authorization) throws AuthorizationFailedException, AnswerNotFoundException {
-        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        String token = AppUtils.getBearerAuthToken(authorization);
         AnswerEntity answer = answerService.deleteAnswer(token,answerId);
         AnswerDeleteResponse response = new AnswerDeleteResponse().id(answer.getUuid()).status(AnswerStatus.ANSWER_DELETED.getStatus());
         return new ResponseEntity<>(response,HttpStatus.OK);
@@ -106,7 +98,7 @@ public class AnswerController {
      */
     @RequestMapping(path = "/answer/all/{questionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<AnswerDetailsResponse>> getAllAnswersToQuestion(@PathVariable("questionId") String questionId, @RequestHeader("authorization") String authorization) throws AuthorizationFailedException, InvalidQuestionException {
-        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        String token = AppUtils.getBearerAuthToken(authorization);
         List<AnswerDetailsResponse> response = new ArrayList<>();
         answerService.getAnswersForQuestion(token, questionId).forEach (answer -> response.add(new AnswerDetailsResponse().id(answer.getUuid()).answerContent(answer.getAnswer()).questionContent(answer.getQuestion().getContent())));
         if(response.isEmpty()){

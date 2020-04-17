@@ -5,7 +5,7 @@ import com.upgrad.quora.service.business.UserService;
 import com.upgrad.quora.db.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
-import org.apache.commons.lang3.StringUtils;
+import com.upgrad.quora.service.utils.AppUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,7 +31,7 @@ public class CommonController {
     public ResponseEntity<UserDetailsResponse> getUserProfile(@RequestHeader("authorization") final String authorization,
                                                               @PathVariable("userId") final String userId)
             throws AuthorizationFailedException, UserNotFoundException {
-        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        String token = AppUtils.getBearerAuthToken(authorization);
         UserEntity user = userService.getUserById(token, userId);
         UserDetailsResponse userDetailsResponse = new UserDetailsResponse()
                 .firstName(user.getFirstName())

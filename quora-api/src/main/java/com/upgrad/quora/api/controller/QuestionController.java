@@ -2,14 +2,12 @@ package com.upgrad.quora.api.controller;
 
 import com.upgrad.quora.api.model.*;
 import com.upgrad.quora.service.business.QuestionService;
-import com.upgrad.quora.service.business.UserService;
 import com.upgrad.quora.db.entity.QuestionEntity;
-import com.upgrad.quora.db.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
 import com.upgrad.quora.service.constants.QuestionStatus;
 import com.upgrad.quora.service.exception.UserNotFoundException;
-import org.apache.commons.lang3.StringUtils;
+import com.upgrad.quora.service.utils.AppUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,7 +35,7 @@ public class QuestionController {
      */
     @RequestMapping(path="/create", method= RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestionResponse> createQuestion(@RequestHeader("authorization") String authorization, QuestionRequest request) throws AuthorizationFailedException {
-        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        String token = AppUtils.getBearerAuthToken(authorization);
         QuestionEntity question = new QuestionEntity();
         question.setContent(request.getContent());
         question.setDate(LocalDate.now());
@@ -57,9 +55,8 @@ public class QuestionController {
      */
     @RequestMapping(path="/all",method=RequestMethod.GET,produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestions(@RequestHeader("authorization") String authorization) throws AuthorizationFailedException {
-        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        List<QuestionDetailsResponse> response = new ArrayList<>();
-        questionService.getAllQuestions(token).forEach (question -> response.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
+        String token = AppUtils.getBearerAuthToken(authorization);
+        List<QuestionDetailsResponse> response = this.mapListResponseItems(questionService.getAllQuestions(token));
         if(response.isEmpty()){
             return new ResponseEntity<>(response,HttpStatus.NO_CONTENT);
         }
@@ -79,7 +76,7 @@ public class QuestionController {
      */
     @RequestMapping(path="/edit/{questionId}",method=RequestMethod.PUT,consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestionEditResponse> editQuestion(@RequestHeader("authorization") String authorization, @PathVariable("questionId")String questionId, QuestionEditRequest request) throws AuthorizationFailedException, InvalidQuestionException {
-        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        String token = AppUtils.getBearerAuthToken(authorization);
         QuestionEntity question = questionService.getQuestion(questionId);
         question.setContent(request.getContent());
         questionId = questionService.editQuestion(token,question);
@@ -100,7 +97,7 @@ public class QuestionController {
      */
     @RequestMapping(path="/delete/{questionId}",method=RequestMethod.DELETE,produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestionDeleteResponse> deleteQuestion(@RequestHeader("authorization") String authorization, @PathVariable("questionId")String questionId) throws AuthorizationFailedException, InvalidQuestionException {
-        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        String token = AppUtils.getBearerAuthToken(authorization);
         QuestionEntity question = questionService.getQuestion(questionId);
         questionId = questionService.deleteQuestion(token,question);
         QuestionDeleteResponse response = new QuestionDeleteResponse();
@@ -119,9 +116,8 @@ public class QuestionController {
      */
     @RequestMapping(path="/all/{userId}",method=RequestMethod.GET,produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<QuestionDetailsResponse>> getUserQuestions(@RequestHeader("authorization") String authorization, @PathVariable("userId")String userId) throws AuthorizationFailedException, UserNotFoundException, UserNotFoundException {
-        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        List<QuestionDetailsResponse> response = new ArrayList<>();
-        questionService.getUserQuestions(token,userId).forEach (question -> response.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
+        String token = AppUtils.getBearerAuthToken(authorization);
+        List<QuestionDetailsResponse> response = this.mapListResponseItems(questionService.getUserQuestions(token, userId));
         if(response.isEmpty()){
             return new ResponseEntity<>(response,HttpStatus.NO_CONTENT);
         }
@@ -130,5 +126,10 @@ public class QuestionController {
         }
     }
 
+    private List<QuestionDetailsResponse> mapListResponseItems(List<QuestionEntity> questions){
+        List<QuestionDetailsResponse> response = new ArrayList<>();
+        questions.forEach (question -> response.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
+        return response;
+    }
 
 }

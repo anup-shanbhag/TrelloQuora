@@ -12,10 +12,9 @@ import com.upgrad.quora.service.constants.UserStatus;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.SignOutRestrictedException;
 import com.upgrad.quora.service.exception.SignUpRestrictedException;
+import com.upgrad.quora.service.utils.AppUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -68,7 +67,7 @@ public class UserController {
      */
     @RequestMapping(path = "/signin", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<SigninResponse> loginUser(@RequestHeader("authorization") String authorization) throws AuthenticationFailedException {
-        String token = (authorization.contains("Basic ")) ? StringUtils.substringAfter(authorization, "Basic ") : authorization;
+        String token = AppUtils.getBasicAuthToken(authorization);
         StringTokenizer tokens =  new StringTokenizer(new String (Base64.getDecoder().decode(token)));
         UserAuthEntity userAuth = userService.authenticateUser(tokens.nextToken(),tokens.nextToken());
         SigninResponse response = new SigninResponse().id(userAuth.getUuid()).message(UserStatus.SIGN_IN_OK.getStatus());
@@ -85,7 +84,7 @@ public class UserController {
      */
     @RequestMapping(path = "/signout", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<SignoutResponse> logoutUser(@RequestHeader("authorization") String authorization) throws SignOutRestrictedException {
-        String token = (authorization.contains("Basic ")) ? StringUtils.substringAfter(authorization, "Basic ") : authorization;
+        String token = AppUtils.getBearerAuthToken(authorization);
         UserEntity user = userService.invalidateAuthorization(token);
         SignoutResponse response = new SignoutResponse().id(user.getUuid()).message(UserStatus.SIGN_OUT_OK.getStatus());
         return new ResponseEntity<>(response, HttpStatus.OK);

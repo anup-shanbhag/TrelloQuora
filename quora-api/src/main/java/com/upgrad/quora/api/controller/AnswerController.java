@@ -51,9 +51,7 @@ public class AnswerController {
             answer.setAnswer(request.getAnswer());
             answer.setDate(LocalDate.now());
             answer.setUuid(UUID.randomUUID().toString());
-            answer.setUser(user);
-            answer.setQuestion(question);
-            answer = answerService.createAnswer(answer);
+            answer = answerService.createAnswer(token, questionId, answer);
             AnswerResponse response = new AnswerResponse().id(answer.getUuid()).status(AnswerStatus.ANSWER_CREATED.getStatus());
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         }
@@ -74,11 +72,10 @@ public class AnswerController {
     @RequestMapping(path = "/answer/edit/{answerId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerEditResponse> editAnswer(@PathVariable("answerId") String answerId, @RequestHeader("authorization") String authorization, AnswerEditRequest request) throws AuthorizationFailedException, AnswerNotFoundException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        UserEntity user = userService.getCurrentUser(token);
         AnswerEntity answer = answerService.getAnswer(answerId);
         answer.setAnswer(request.getContent());
-        answerId = answerService.editAnswer(user,answer);
-        AnswerEditResponse response = new AnswerEditResponse().id(answerId).status(AnswerStatus.ANSWER_EDITED.getStatus());
+        answer = answerService.editAnswer(token,answer);
+        AnswerEditResponse response = new AnswerEditResponse().id(answer.getUuid()).status(AnswerStatus.ANSWER_EDITED.getStatus());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -94,10 +91,8 @@ public class AnswerController {
     @RequestMapping(path = "/answer/delete/{answerId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerDeleteResponse> deleteAnswer(@PathVariable("answerId") String answerId, @RequestHeader("authorization") String authorization) throws AuthorizationFailedException, AnswerNotFoundException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        UserEntity user = userService.getCurrentUser(token);
-        AnswerEntity answer = answerService.getAnswer(answerId);
-        answerId = answerService.deleteAnswer(user,answer);
-        AnswerDeleteResponse response = new AnswerDeleteResponse().id(answerId).status(AnswerStatus.ANSWER_DELETED.getStatus());
+        AnswerEntity answer = answerService.deleteAnswer(token,answerId);
+        AnswerDeleteResponse response = new AnswerDeleteResponse().id(answer.getUuid()).status(AnswerStatus.ANSWER_DELETED.getStatus());
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
@@ -112,9 +107,8 @@ public class AnswerController {
     @RequestMapping(path = "/answer/all/{questionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<AnswerDetailsResponse>> getAllAnswersToQuestion(@PathVariable("questionId") String questionId, @RequestHeader("authorization") String authorization) throws AuthorizationFailedException, InvalidQuestionException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        UserEntity user = userService.getCurrentUser(token);
         List<AnswerDetailsResponse> response = new ArrayList<>();
-        answerService.getAnswersForQuestion(questionId).forEach (answer -> response.add(new AnswerDetailsResponse().id(answer.getUuid()).answerContent(answer.getAnswer()).questionContent(answer.getQuestion().getContent())));
+        answerService.getAnswersForQuestion(token, questionId).forEach (answer -> response.add(new AnswerDetailsResponse().id(answer.getUuid()).answerContent(answer.getAnswer()).questionContent(answer.getQuestion().getContent())));
         if(response.isEmpty()){
             return new ResponseEntity<>(response,HttpStatus.NO_CONTENT);
         }
